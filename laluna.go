@@ -55,6 +55,7 @@ func (l LaLuna) Scrape(ctx context.Context) (RestaurantMenu, error) {
 	return RestaurantMenu{
 		Restaurant:  "La Luna",
 		Location:    "Drabantgatan",
+		MenuType:    "daily",
 		Week:        currentISOWeek(),
 		WeekDisplay: currentWeekDisplay(),
 		Items:       items,
@@ -147,7 +148,7 @@ func parseLaLunaMenu(raw string) []MenuItem {
 
 		// Each dish line is a full description — use the day as context in the name
 		items = append(items, MenuItem{
-			Day:         currentDay,
+			Date:        weekdayToDate(currentDay),
 			Name:        extractDishName(line),
 			Description: line,
 		})

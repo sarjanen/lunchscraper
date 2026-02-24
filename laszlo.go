@@ -129,6 +129,7 @@ func (l LaszloEbbepark) Scrape(ctx context.Context) (RestaurantMenu, error) {
 	return RestaurantMenu{
 		Restaurant:  "Laszlo's Krog",
 		Location:    "Ebbepark",
+		MenuType:    "weekly",
 		Week:        currentISOWeek(),
 		WeekDisplay: currentWeekDisplay(),
 		Items:       items,
@@ -207,8 +208,9 @@ func parseLaszloMenu(raw string) []MenuItem {
 			}
 		}
 
+		monDate, _ := weekDateRange()
 		items = append(items, MenuItem{
-			Day:         "Hela veckan",
+			Date:        monDate,
 			Name:        name,
 			Description: desc,
 		})

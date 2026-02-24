@@ -18,6 +18,7 @@ type Scraper interface {
 type RestaurantMenu struct {
 	Restaurant  string     `json:"restaurant"`
 	Location    string     `json:"location"`
+	MenuType    string     `json:"menu_type"`
 	Week        string     `json:"week"`
 	WeekDisplay string     `json:"week_display"`
 	Items       []MenuItem `json:"items"`
@@ -25,7 +26,7 @@ type RestaurantMenu struct {
 }
 
 type MenuItem struct {
-	Day         string `json:"day"`
+	Date        string `json:"date"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
 }

@@ -74,6 +74,7 @@ func (m MonteCarlo) Scrape(ctx context.Context) (RestaurantMenu, error) {
 	return RestaurantMenu{
 		Restaurant:  "Pizzeria Monte Carlo",
 		Location:    "Parkgatan",
+		MenuType:    "daily",
 		Week:        currentISOWeek(),
 		WeekDisplay: currentWeekDisplay(),
 		Items:       items,
@@ -136,7 +137,7 @@ func parseMonteCarloMenu(raw string) []MenuItem {
 		}
 
 		items = append(items, MenuItem{
-			Day:         currentDay,
+			Date:        weekdayToDate(currentDay),
 			Name:        extractDishName(line),
 			Description: line,
 		})
