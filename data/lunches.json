@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-02-24T10:08:03+01:00",
+  "generated_at": "2026-02-24T10:16:11+01:00",
   "restaurants": [
     {
       "restaurant": "Laszlo's Krog",
@@ -84,6 +84,34 @@
         }
       ],
       "source": "https://lalunat1.se/lunch"
+    },
+    {
+      "restaurant": "Pizzeria Monte Carlo",
+      "location": "Parkgatan",
+      "week": "2026W9",
+      "items": [
+        {
+          "name": "MÅNDAG: Rödspätta",
+          "description": "Rödspätta serveras med kokt potatis ,remouladsås och varma grönsaker"
+        },
+        {
+          "name": "TISDAG: Raggmunk",
+          "description": "Raggmunk med stekfläsk och lingonsylt Stekfläsk med löksås och kokt potatis"
+        },
+        {
+          "name": "ONSDAG: Korv stroganoff",
+          "description": "Korv stroganoff med ris"
+        },
+        {
+          "name": "TORSDAG: kyckling \u0026 Pasta woke",
+          "description": "kyckling \u0026 Pasta woke serveras med pepparsås"
+        },
+        {
+          "name": "FREDAG: Fläskschnitzel",
+          "description": "Fläskschnitzel serveras med champinjonsås, citron och gröna ärtor"
+        }
+      ],
+      "source": "https://qopla.com/restaurant/restaurang-monte-carlo/qJNm7kQW9Z/home"
     }
   ]
 }
