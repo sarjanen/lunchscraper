@@ -20,12 +20,6 @@ func main() {
 	allocCtx, cancel := chromedp.NewExecAllocator(context.Background(), opts...)
 	defer cancel()
 
-	ctx, cancel := chromedp.NewContext(allocCtx, chromedp.WithLogf(func(string, ...interface{}) {}))
-	defer cancel()
-
-	ctx, cancel = context.WithTimeout(ctx, 45*time.Second)
-	defer cancel()
-
 	scrapers := []scraper.Scraper{
 		scraper.LaszloEbbepark{},
 		scraper.LaLuna{},
@@ -36,7 +30,16 @@ func main() {
 
 	var failed int
 	for _, s := range scrapers {
-		menu, err := s.Scrape(ctx)
+		// Each scraper gets its own browser tab and timeout so one
+		// slow scrape can't steal the time budget from the next one.
+		tabCtx, tabCancel := chromedp.NewContext(allocCtx,
+			chromedp.WithLogf(func(string, ...interface{}) {}))
+		tCtx, tCancel := context.WithTimeout(tabCtx, 45*time.Second)
+
+		menu, err := s.Scrape(tCtx)
+		tCancel()
+		tabCancel()
+
 		if err != nil {
 			log.Printf("FAIL  %s: %v", s.Name(), err)
 			failed++
