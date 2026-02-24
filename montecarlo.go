@@ -72,11 +72,12 @@ func (m MonteCarlo) Scrape(ctx context.Context) (RestaurantMenu, error) {
 	log.Printf("Scraped %d menu items", len(items))
 
 	return RestaurantMenu{
-		Restaurant: "Pizzeria Monte Carlo",
-		Location:   "Parkgatan",
-		Week:       currentISOWeek(),
-		Items:      items,
-		Source:     url,
+		Restaurant:  "Pizzeria Monte Carlo",
+		Location:    "Parkgatan",
+		Week:        currentISOWeek(),
+		WeekDisplay: currentWeekDisplay(),
+		Items:       items,
+		Source:      url,
 	}, nil
 }
 
@@ -134,13 +135,9 @@ func parseMonteCarloMenu(raw string) []MenuItem {
 			continue
 		}
 
-		prefix := ""
-		if currentDay != "" {
-			prefix = currentDay + ": "
-		}
-
 		items = append(items, MenuItem{
-			Name:        prefix + extractDishName(line),
+			Day:         currentDay,
+			Name:        extractDishName(line),
 			Description: line,
 		})
 	}

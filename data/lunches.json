@@ -1,28 +1,34 @@
 {
-  "generated_at": "2026-02-24T10:16:11+01:00",
+  "generated_at": "2026-02-24T10:21:20+01:00",
   "restaurants": [
     {
       "restaurant": "Laszlo's Krog",
       "location": "Ebbepark",
       "week": "2026W9",
+      "week_display": "Vecka 9 (23-27 feb)",
       "items": [
         {
+          "day": "Hela veckan",
           "name": "Fiskbiff",
           "description": "Serveras med riven pepparrotskräm, dillkokt potatis, fänkålssallad samt haricots verts."
         },
         {
+          "day": "Hela veckan",
           "name": "Vegetarisk gratäng",
           "description": "Blomkåls- och broccoligratäng serveras med pepparrotskräm samt tomat- och rödlökssallad i balsamvinäger."
         },
         {
+          "day": "Hela veckan",
           "name": "Laszlo’s gulaschgryta",
           "description": "Serveras med pilaffris, crème fraiche samt gurk- och äppelsallad."
         },
         {
+          "day": "Hela veckan",
           "name": "Örtbakad köttfärslimpa",
           "description": "Med knaprig lök och bacon, serveras med pepparsås, rostad potatis, inlagd gurka samt svartvinbärsgelé."
         },
         {
+          "day": "Hela veckan",
           "name": "Thaikyckling",
           "description": "Thaikryddad kycklingfilé serveras med citron- och korianderris samt kimchiyoghurtkräm."
         }
@@ -33,53 +39,66 @@
       "restaurant": "La Luna",
       "location": "Drabantgatan",
       "week": "2026W9",
+      "week_display": "Vecka 9 (23-27 feb)",
       "items": [
         {
-          "name": "MÅNDAG: Raggmunk",
+          "day": "MÅNDAG",
+          "name": "Raggmunk",
           "description": "Raggmunk med stekt rimmat fläsk samt lingon."
         },
         {
-          "name": "MÅNDAG: Biff Rydberg på högrev",
+          "day": "MÅNDAG",
+          "name": "Biff Rydberg på högrev",
           "description": "Biff Rydberg på högrev med råstekt tärnad potatis, karamelliserad lök, rå äggula och Dijonkräm."
         },
         {
-          "name": "TISDAG: Krämig pasta",
+          "day": "TISDAG",
+          "name": "Krämig pasta",
           "description": "Krämig pasta med ugnsbakad laxfilé, ruccola samt Grana Padanosås."
         },
         {
-          "name": "TISDAG: Chili con carne på nötfärs",
+          "day": "TISDAG",
+          "name": "Chili con carne på nötfärs",
           "description": "Chili con carne på nötfärs serveras med gräddfil, majskorn och potatis eller ris."
         },
         {
-          "name": "ONSDAG: Pasta",
+          "day": "ONSDAG",
+          "name": "Pasta",
           "description": "Pasta med tärnat sidfläsk, purjolök, bacon och grovriven parmesan."
         },
         {
-          "name": "ONSDAG: Fläskfilé Oscar",
+          "day": "ONSDAG",
+          "name": "Fläskfilé Oscar",
           "description": "Fläskfilé Oscar med het pommes frites, handskalade räkor, grön sparris samt bearnaisesås."
         },
         {
-          "name": "TORSDAG: Gräddig räkpasta",
+          "day": "TORSDAG",
+          "name": "Gräddig räkpasta",
           "description": "Gräddig räkpasta med dill och vitlök toppad med chiliscampi."
         },
         {
-          "name": "TORSDAG: Stroganoff på kycklingkorv",
+          "day": "TORSDAG",
+          "name": "Stroganoff på kycklingkorv",
           "description": "Stroganoff på kycklingkorv serveras med hackad persilja samt ris eller potatis."
         },
         {
-          "name": "FREDAG: Stekt lövbit",
+          "day": "FREDAG",
+          "name": "Stekt lövbit",
           "description": "Stekt lövbit med pommes, haricots verts och persiljesmör."
         },
         {
-          "name": "FREDAG: Skomakarlåda på kycklingfilé",
+          "day": "FREDAG",
+          "name": "Skomakarlåda på kycklingfilé",
           "description": "Skomakarlåda på kycklingfilé med potatismos, purjolök, sidfläsk samt rödvinssås."
         },
         {
-          "name": "VECKANS SPECIAL: Ceasarsallad",
+          "day": "VECKANS SPECIAL",
+          "name": "Ceasarsallad",
           "description": "Ceasarsallad med handskalade räkor, krutonger, kokt ägg, parmesan och dressing."
         },
         {
-          "name": "VECKANS VEGETARISKA: Kikärtsbiffar i bröd",
+          "day": "VECKANS VEGETARISKA",
+          "name": "Kikärtsbiffar i bröd",
           "description": "Kikärtsbiffar i bröd med tillbehör samt vitlökssås."
         }
       ],
@@ -89,25 +108,31 @@
       "restaurant": "Pizzeria Monte Carlo",
       "location": "Parkgatan",
       "week": "2026W9",
+      "week_display": "Vecka 9 (23-27 feb)",
       "items": [
         {
-          "name": "MÅNDAG: Rödspätta",
+          "day": "MÅNDAG",
+          "name": "Rödspätta",
           "description": "Rödspätta serveras med kokt potatis ,remouladsås och varma grönsaker"
         },
         {
-          "name": "TISDAG: Raggmunk",
+          "day": "TISDAG",
+          "name": "Raggmunk",
           "description": "Raggmunk med stekfläsk och lingonsylt Stekfläsk med löksås och kokt potatis"
         },
         {
-          "name": "ONSDAG: Korv stroganoff",
+          "day": "ONSDAG",
+          "name": "Korv stroganoff",
           "description": "Korv stroganoff med ris"
         },
         {
-          "name": "TORSDAG: kyckling \u0026 Pasta woke",
+          "day": "TORSDAG",
+          "name": "kyckling \u0026 Pasta woke",
           "description": "kyckling \u0026 Pasta woke serveras med pepparsås"
         },
         {
-          "name": "FREDAG: Fläskschnitzel",
+          "day": "FREDAG",
+          "name": "Fläskschnitzel",
           "description": "Fläskschnitzel serveras med champinjonsås, citron och gröna ärtor"
         }
       ],

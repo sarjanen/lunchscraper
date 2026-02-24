@@ -53,11 +53,12 @@ func (l LaLuna) Scrape(ctx context.Context) (RestaurantMenu, error) {
 	log.Printf("Scraped %d menu items", len(items))
 
 	return RestaurantMenu{
-		Restaurant: "La Luna",
-		Location:   "Drabantgatan",
-		Week:       currentISOWeek(),
-		Items:      items,
-		Source:     url,
+		Restaurant:  "La Luna",
+		Location:    "Drabantgatan",
+		Week:        currentISOWeek(),
+		WeekDisplay: currentWeekDisplay(),
+		Items:       items,
+		Source:      url,
 	}, nil
 }
 
@@ -146,7 +147,8 @@ func parseLaLunaMenu(raw string) []MenuItem {
 
 		// Each dish line is a full description — use the day as context in the name
 		items = append(items, MenuItem{
-			Name:        currentDay + ": " + extractDishName(line),
+			Day:         currentDay,
+			Name:        extractDishName(line),
 			Description: line,
 		})
 	}
