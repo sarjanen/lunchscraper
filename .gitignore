@@ -5,11 +5,17 @@ node_modules/
 dist/
 
 # Scraped data (generated at build time)
-public/data/
+web/public/data/
 data/
 
 # Go binary
-lunchscraper
+/scraper
 
 # OS
 .DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+*.swp
+*.swo

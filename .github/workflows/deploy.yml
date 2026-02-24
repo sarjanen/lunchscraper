@@ -32,8 +32,8 @@ jobs:
 
       - uses: oven-sh/setup-bun@v2
 
-      # Run the Go scraper — writes public/data/lunches.json
-      - run: go run .
+      # Run the Go scraper — writes web/public/data/lunches.json
+      - run: go run ./cmd/scraper
 
       # Build the Vite site
       - run: bun install --frozen-lockfile
