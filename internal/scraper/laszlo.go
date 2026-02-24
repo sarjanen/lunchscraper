@@ -22,8 +22,16 @@ func (l LaszloEbbepark) Scrape(ctx context.Context) (RestaurantMenu, error) {
 
 	err := chromedp.Run(ctx,
 		chromedp.Navigate(url),
-		chromedp.WaitVisible("body", chromedp.ByQuery),
-		chromedp.Sleep(1*time.Second),
+		chromedp.WaitReady("body", chromedp.ByQuery),
+
+		// Wait for the Elementor tab widget to render before interacting
+		chromedp.ActionFunc(func(ctx context.Context) error {
+			// Try up to 10s for a tab element to appear
+			waitCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+			defer cancel()
+			_ = chromedp.WaitVisible(`.elementor-tab-title, [role="tab"], .e-n-tab-title`, chromedp.ByQuery).Do(waitCtx)
+			return nil // non-fatal, keep going
+		}),
 
 		// Handle cookie consent dialog
 		chromedp.ActionFunc(func(ctx context.Context) error {
@@ -44,7 +52,7 @@ func (l LaszloEbbepark) Scrape(ctx context.Context) (RestaurantMenu, error) {
 			return err
 		}),
 
-		chromedp.Sleep(1*time.Second),
+		chromedp.Sleep(500*time.Millisecond),
 
 		// Scroll to the menu section and click the "LUNCH" tab
 		chromedp.ActionFunc(func(ctx context.Context) error {
@@ -84,7 +92,32 @@ func (l LaszloEbbepark) Scrape(ctx context.Context) (RestaurantMenu, error) {
 			return nil
 		}),
 
-		chromedp.Sleep(3*time.Second),
+		chromedp.Sleep(1*time.Second),
+
+		// Wait for tab content with "VECKA" to appear (up to 10s)
+		chromedp.ActionFunc(func(ctx context.Context) error {
+			waitCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+			defer cancel()
+			for {
+				var found bool
+				_ = chromedp.Evaluate(`
+					(() => {
+						const panels = document.querySelectorAll(
+						  '.elementor-tab-content, .e-n-tabs-content > div, [role="tabpanel"]'
+						);
+						return Array.from(panels).some(p => p.innerText && p.innerText.toUpperCase().includes('VECKA'));
+					})()
+				`, &found).Do(waitCtx)
+				if found {
+					return nil
+				}
+				select {
+				case <-waitCtx.Done():
+					return nil // non-fatal
+				case <-time.After(500 * time.Millisecond):
+				}
+			}
+		}),
 
 		// Extract the lunch menu content from the active tab
 		chromedp.Evaluate(`

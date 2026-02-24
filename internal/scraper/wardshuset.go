@@ -23,8 +23,15 @@ func (w Wardshuset) Scrape(ctx context.Context) (RestaurantMenu, error) {
 
 	err := chromedp.Run(ctx,
 		chromedp.Navigate(url),
-		chromedp.WaitVisible("body", chromedp.ByQuery),
-		chromedp.Sleep(2*time.Second),
+		chromedp.WaitReady("body", chromedp.ByQuery),
+
+		// Wait for navigation links to render (up to 10s)
+		chromedp.ActionFunc(func(ctx context.Context) error {
+			waitCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+			defer cancel()
+			_ = chromedp.WaitVisible(`a, button`, chromedp.ByQuery).Do(waitCtx)
+			return nil
+		}),
 
 		// Handle cookie consent if present
 		chromedp.ActionFunc(func(ctx context.Context) error {
@@ -33,7 +40,7 @@ func (w Wardshuset) Scrape(ctx context.Context) (RestaurantMenu, error) {
 			return nil
 		}),
 
-		chromedp.Sleep(1*time.Second),
+		chromedp.Sleep(500*time.Millisecond),
 
 		// Click the LUNCHMENY nav link to scroll to the lunch section
 		chromedp.ActionFunc(func(ctx context.Context) error {
@@ -56,7 +63,30 @@ func (w Wardshuset) Scrape(ctx context.Context) (RestaurantMenu, error) {
 			return nil
 		}),
 
-		chromedp.Sleep(2*time.Second),
+		chromedp.Sleep(1*time.Second),
+
+		// Wait for lunch content with "VECKA" + day names to appear (up to 15s)
+		chromedp.ActionFunc(func(ctx context.Context) error {
+			waitCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
+			defer cancel()
+			for {
+				var found bool
+				_ = chromedp.Evaluate(`
+					(() => {
+						const text = document.body.innerText.toUpperCase();
+						return text.includes('VECKA') && text.includes('MÅNDAG');
+					})()
+				`, &found).Do(waitCtx)
+				if found {
+					return nil
+				}
+				select {
+				case <-waitCtx.Done():
+					return nil
+				case <-time.After(500 * time.Millisecond):
+				}
+			}
+		}),
 
 		// Extract the lunch menu text from the page
 		chromedp.Evaluate(`

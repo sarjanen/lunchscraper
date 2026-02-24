@@ -32,15 +32,26 @@ func main() {
 
 	var failed int
 	for _, s := range scrapers {
-		// Each scraper gets its own browser tab and timeout so one
-		// slow scrape can't steal the time budget from the next one.
-		tabCtx, tabCancel := chromedp.NewContext(allocCtx,
-			chromedp.WithLogf(func(string, ...interface{}) {}))
-		tCtx, tCancel := context.WithTimeout(tabCtx, 45*time.Second)
+		var menu scraper.RestaurantMenu
+		var err error
 
-		menu, err := s.Scrape(tCtx)
-		tCancel()
-		tabCancel()
+		// Try up to 2 attempts — CI runners can be slow to spin up Chrome.
+		for attempt := 1; attempt <= 2; attempt++ {
+			tabCtx, tabCancel := chromedp.NewContext(allocCtx,
+				chromedp.WithLogf(func(string, ...interface{}) {}))
+			tCtx, tCancel := context.WithTimeout(tabCtx, 60*time.Second)
+
+			menu, err = s.Scrape(tCtx)
+			tCancel()
+			tabCancel()
+
+			if err == nil {
+				break
+			}
+			if attempt == 1 {
+				log.Printf("RETRY %s (attempt 1 failed: %v)", s.Name(), err)
+			}
+		}
 
 		if err != nil {
 			log.Printf("FAIL  %s: %v", s.Name(), err)
