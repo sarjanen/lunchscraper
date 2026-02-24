@@ -1,0 +1,33 @@
+{
+  "generated_at": "2026-02-24T09:57:54+01:00",
+  "restaurants": [
+    {
+      "restaurant": "Laszlo's Krog",
+      "location": "Ebbepark",
+      "week": "2026W9",
+      "items": [
+        {
+          "name": "Fiskbiff",
+          "description": "Serveras med riven pepparrotskräm, dillkokt potatis, fänkålssallad samt haricots verts."
+        },
+        {
+          "name": "Vegetarisk gratäng",
+          "description": "Blomkåls- och broccoligratäng serveras med pepparrotskräm samt tomat- och rödlökssallad i balsamvinäger."
+        },
+        {
+          "name": "Laszlo’s gulaschgryta",
+          "description": "Serveras med pilaffris, crème fraiche samt gurk- och äppelsallad."
+        },
+        {
+          "name": "Örtbakad köttfärslimpa",
+          "description": "Med knaprig lök och bacon, serveras med pepparsås, rostad potatis, inlagd gurka samt svartvinbärsgelé."
+        },
+        {
+          "name": "Thaikyckling",
+          "description": "Thaikryddad kycklingfilé serveras med citron- och korianderris samt kimchiyoghurtkräm."
+        }
+      ],
+      "source": "https://www.laszloskrog.se/ebbepark/"
+    }
+  ]
+}
