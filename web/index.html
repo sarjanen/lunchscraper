@@ -161,6 +161,22 @@
 
     .source-link a:hover { text-decoration: underline; }
 
+    .closed-notice {
+      color: var(--text-dim);
+      text-align: center;
+      padding: 1.5rem 1rem;
+      font-size: 0.9rem;
+      font-style: italic;
+    }
+
+    .weekly-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent-dim);
+      padding: 0.5rem 1rem 0.1rem;
+    }
+
     .menu-image {
       padding: 0.5rem 1rem 0.75rem;
       text-align: center;
@@ -230,7 +246,9 @@
 
     function getWeekDates(data) {
       const dates = new Set();
-      data.restaurants.forEach(r => r.items.forEach(i => dates.add(i.date)));
+      data.restaurants.forEach(r => r.items.forEach(i => {
+        if (i.date) dates.add(i.date);
+      }));
       return [...dates].sort();
     }
 
@@ -283,12 +301,25 @@
         const isImage = r.menu_type === 'image';
         const isWeekly = r.menu_type === 'weekly';
         const items = (r.items || []);
-        const filteredItems = isWeekly ? items : items.filter(i => i.date === selectedDate);
+
+        // For daily menus: show items matching the selected date + items with no date (weekly specials)
+        const filteredItems = isWeekly
+          ? items.filter(i => !i.closed)
+          : items.filter(i => i.date === selectedDate || (!i.date && !i.closed));
+
+        // Check if this restaurant is closed on the selected date
+        const closedToday = items.some(i => i.date === selectedDate && i.closed);
+
+        // Split into day-specific and weekly-special items
+        const dayItems = filteredItems.filter(i => i.date);
+        const weeklyItems = filteredItems.filter(i => !i.date);
 
         let itemsHTML = '';
         if (isImage && r.image_url) {
           itemsHTML = `<div class="menu-image"><img src="${esc(r.image_url)}" alt="Lunchmeny ${esc(r.restaurant)}" loading="lazy"></div>`;
-        } else if (filteredItems.length === 0) {
+        } else if (closedToday) {
+          itemsHTML = `<div class="closed-notice">Stängt denna dag</div>`;
+        } else if (dayItems.length === 0 && weeklyItems.length === 0) {
           itemsHTML = `<div class="empty">Ingen lunch denna dag</div>`;
         } else if (isWeekly) {
           itemsHTML = `<div class="menu-items">${filteredItems.map(i =>
@@ -298,21 +329,28 @@
             </div>`
           ).join('')}</div>`;
         } else {
-          // Daily — group by date for the selected day (usually just one date)
-          const grouped = {};
-          filteredItems.forEach(i => {
-            if (!grouped[i.date]) grouped[i.date] = [];
-            grouped[i.date].push(i);
-          });
+          // Daily items
+          const dailyHTML = dayItems.length > 0
+            ? `<div class="menu-items">${dayItems.map(i =>
+                `<div class="menu-item">
+                  <div class="dish-name">${esc(i.name)}</div>
+                  ${i.description ? `<div class="dish-desc">${esc(i.description)}</div>` : ''}
+                </div>`
+              ).join('')}</div>`
+            : '';
 
-          itemsHTML = Object.entries(grouped).map(([date, dishes]) =>
-            `<div class="menu-items">${dishes.map(i =>
-              `<div class="menu-item">
-                <div class="dish-name">${esc(i.name)}</div>
-                ${i.description ? `<div class="dish-desc">${esc(i.description)}</div>` : ''}
-              </div>`
-            ).join('')}</div>`
-          ).join('');
+          // Weekly specials (no date — shown every day)
+          const weeklyHTML = weeklyItems.length > 0
+            ? `<div class="weekly-label">Finns hela veckan</div>
+               <div class="menu-items">${weeklyItems.map(i =>
+                `<div class="menu-item">
+                  <div class="dish-name">${esc(i.name)}</div>
+                  ${i.description ? `<div class="dish-desc">${esc(i.description)}</div>` : ''}
+                </div>`
+              ).join('')}</div>`
+            : '';
+
+          itemsHTML = dailyHTML + weeklyHTML;
         }
 
         const tagLabel = isImage ? 'Bildmeny' : isWeekly ? 'Veckans meny' : 'Dagens lunch';

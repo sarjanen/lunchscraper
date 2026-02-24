@@ -24,6 +24,7 @@ type MenuItem struct {
 	Date        string `json:"date"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
+	Closed      bool   `json:"closed,omitempty"`
 }
 
 // Output is the top-level JSON structure written to disk.

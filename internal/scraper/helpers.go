@@ -106,6 +106,56 @@ func weekDateRange() (string, string) {
 	return monday.Format("2006-01-02"), friday.Format("2006-01-02")
 }
 
+// weekdayDates returns ISO date strings for Mon–Fri of the current week.
+func weekdayDates() []string {
+	monday := mondayOfWeek()
+	dates := make([]string, 5)
+	for i := 0; i < 5; i++ {
+		dates[i] = monday.AddDate(0, 0, i).Format("2006-01-02")
+	}
+	return dates
+}
+
+// expandWeeklySpecials replicates weekly items (items whose Date equals the
+// sentinel value) onto every weekday that is not in the closedDates set.
+// This is useful when a restaurant has e.g. "Veckans fisk" available every
+// open day. Pass sentinelDate = "" to match items with an empty date, or a
+// specific date string used as a placeholder.
+func expandWeeklySpecials(items []MenuItem, closedDates map[string]bool) []MenuItem {
+	dates := weekdayDates()
+
+	var daily []MenuItem
+	var weekly []MenuItem
+
+	for _, item := range items {
+		if item.Closed {
+			daily = append(daily, item)
+			continue
+		}
+		// Items flagged with the "weekly" sentinel name prefix are expanded.
+		upper := strings.ToUpper(item.Name)
+		if strings.HasPrefix(upper, "VECKANS ") {
+			weekly = append(weekly, item)
+		} else {
+			daily = append(daily, item)
+		}
+	}
+
+	// Expand each weekly special onto every open weekday.
+	for _, w := range weekly {
+		for _, d := range dates {
+			if closedDates[d] {
+				continue
+			}
+			expanded := w
+			expanded.Date = d
+			daily = append(daily, expanded)
+		}
+	}
+
+	return daily
+}
+
 // extractDishName tries to get just the dish name from a line like
 // "Raggmunk med stekt rimmat fläsk samt lingon."
 // by taking text up to the first "med", "serveras", or "samt".
