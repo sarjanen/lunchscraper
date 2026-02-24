@@ -47,28 +47,6 @@ func currentISOWeek() string {
 	return strconv.Itoa(year) + "W" + strconv.Itoa(week)
 }
 
-// currentWeekDisplay returns a display-friendly week string like "Vecka 9 (24-28 feb)"
-func currentWeekDisplay() string {
-	now := time.Now()
-	_, week := now.ISOWeek()
-
-	// Find Monday of the current week
-	offset := int(time.Monday - now.Weekday())
-	if offset > 0 {
-		offset -= 7
-	}
-	monday := now.AddDate(0, 0, offset)
-	friday := monday.AddDate(0, 0, 4)
-
-	months := []string{"", "jan", "feb", "mar", "apr", "maj", "jun", "jul", "aug", "sep", "okt", "nov", "dec"}
-	monthStr := months[monday.Month()]
-
-	if monday.Month() == friday.Month() {
-		return "Vecka " + strconv.Itoa(week) + " (" + strconv.Itoa(monday.Day()) + "-" + strconv.Itoa(friday.Day()) + " " + monthStr + ")"
-	}
-	return "Vecka " + strconv.Itoa(week) + " (" + strconv.Itoa(monday.Day()) + " " + monthStr + " - " + strconv.Itoa(friday.Day()) + " " + months[friday.Month()] + ")"
-}
-
 func writeJSON(output Output) {
 	file, err := os.Create("data/lunches.json")
 	if err != nil {

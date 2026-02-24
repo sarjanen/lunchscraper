@@ -16,13 +16,12 @@ type Scraper interface {
 }
 
 type RestaurantMenu struct {
-	Restaurant  string     `json:"restaurant"`
-	Location    string     `json:"location"`
-	MenuType    string     `json:"menu_type"`
-	Week        string     `json:"week"`
-	WeekDisplay string     `json:"week_display"`
-	Items       []MenuItem `json:"items"`
-	Source      string     `json:"source"`
+	Restaurant string     `json:"restaurant"`
+	Location   string     `json:"location"`
+	MenuType   string     `json:"menu_type"`
+	Week       string     `json:"week"`
+	Items      []MenuItem `json:"items"`
+	Source     string     `json:"source"`
 }
 
 type MenuItem struct {

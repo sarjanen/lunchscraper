@@ -72,13 +72,12 @@ func (m MonteCarlo) Scrape(ctx context.Context) (RestaurantMenu, error) {
 	log.Printf("Scraped %d menu items", len(items))
 
 	return RestaurantMenu{
-		Restaurant:  "Pizzeria Monte Carlo",
-		Location:    "Parkgatan",
-		MenuType:    "daily",
-		Week:        currentISOWeek(),
-		WeekDisplay: currentWeekDisplay(),
-		Items:       items,
-		Source:      url,
+		Restaurant: "Pizzeria Monte Carlo",
+		Location:   "Parkgatan",
+		MenuType:   "daily",
+		Week:       currentISOWeek(),
+		Items:      items,
+		Source:     url,
 	}, nil
 }
 

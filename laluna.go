@@ -53,13 +53,12 @@ func (l LaLuna) Scrape(ctx context.Context) (RestaurantMenu, error) {
 	log.Printf("Scraped %d menu items", len(items))
 
 	return RestaurantMenu{
-		Restaurant:  "La Luna",
-		Location:    "Drabantgatan",
-		MenuType:    "daily",
-		Week:        currentISOWeek(),
-		WeekDisplay: currentWeekDisplay(),
-		Items:       items,
-		Source:      url,
+		Restaurant: "La Luna",
+		Location:   "Drabantgatan",
+		MenuType:   "daily",
+		Week:       currentISOWeek(),
+		Items:      items,
+		Source:     url,
 	}, nil
 }
 
