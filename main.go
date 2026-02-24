@@ -53,6 +53,7 @@ func main() {
 
 	scrapers := []Scraper{
 		LaszloEbbepark{},
+		LaLuna{},
 		// Add new scrapers here
 	}
 

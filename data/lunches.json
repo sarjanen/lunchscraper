@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-02-24T10:04:28+01:00",
+  "generated_at": "2026-02-24T10:08:03+01:00",
   "restaurants": [
     {
       "restaurant": "Laszlo's Krog",
@@ -28,6 +28,62 @@
         }
       ],
       "source": "https://www.laszloskrog.se/ebbepark/"
+    },
+    {
+      "restaurant": "La Luna",
+      "location": "Drabantgatan",
+      "week": "2026W9",
+      "items": [
+        {
+          "name": "MÅNDAG: Raggmunk",
+          "description": "Raggmunk med stekt rimmat fläsk samt lingon."
+        },
+        {
+          "name": "MÅNDAG: Biff Rydberg på högrev",
+          "description": "Biff Rydberg på högrev med råstekt tärnad potatis, karamelliserad lök, rå äggula och Dijonkräm."
+        },
+        {
+          "name": "TISDAG: Krämig pasta",
+          "description": "Krämig pasta med ugnsbakad laxfilé, ruccola samt Grana Padanosås."
+        },
+        {
+          "name": "TISDAG: Chili con carne på nötfärs",
+          "description": "Chili con carne på nötfärs serveras med gräddfil, majskorn och potatis eller ris."
+        },
+        {
+          "name": "ONSDAG: Pasta",
+          "description": "Pasta med tärnat sidfläsk, purjolök, bacon och grovriven parmesan."
+        },
+        {
+          "name": "ONSDAG: Fläskfilé Oscar",
+          "description": "Fläskfilé Oscar med het pommes frites, handskalade räkor, grön sparris samt bearnaisesås."
+        },
+        {
+          "name": "TORSDAG: Gräddig räkpasta",
+          "description": "Gräddig räkpasta med dill och vitlök toppad med chiliscampi."
+        },
+        {
+          "name": "TORSDAG: Stroganoff på kycklingkorv",
+          "description": "Stroganoff på kycklingkorv serveras med hackad persilja samt ris eller potatis."
+        },
+        {
+          "name": "FREDAG: Stekt lövbit",
+          "description": "Stekt lövbit med pommes, haricots verts och persiljesmör."
+        },
+        {
+          "name": "FREDAG: Skomakarlåda på kycklingfilé",
+          "description": "Skomakarlåda på kycklingfilé med potatismos, purjolök, sidfläsk samt rödvinssås."
+        },
+        {
+          "name": "VECKANS SPECIAL: Ceasarsallad",
+          "description": "Ceasarsallad med handskalade räkor, krutonger, kokt ägg, parmesan och dressing."
+        },
+        {
+          "name": "VECKANS VEGETARISKA: Kikärtsbiffar i bröd",
+          "description": "Kikärtsbiffar i bröd med tillbehör samt vitlökssås."
+        }
+      ],
+      "source": "https://lalunat1.se/lunch"
     }
   ]
 }
