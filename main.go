@@ -36,7 +36,7 @@ type Output struct {
 }
 
 func main() {
-	_ = os.MkdirAll("data", os.ModePerm)
+	_ = os.MkdirAll("public/data", os.ModePerm)
 
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.Flag("headless", true),

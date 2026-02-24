@@ -1,0 +1,15 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Scraped data (generated at build time)
+public/data/
+data/
+
+# Go binary
+lunchscraper
+
+# OS
+.DS_Store

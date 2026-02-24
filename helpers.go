@@ -48,7 +48,7 @@ func currentISOWeek() string {
 }
 
 func writeJSON(output Output) {
-	file, err := os.Create("data/lunches.json")
+	file, err := os.Create("public/data/lunches.json")
 	if err != nil {
 		log.Fatal(err)
 	}
