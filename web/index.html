@@ -161,6 +161,16 @@
 
     .source-link a:hover { text-decoration: underline; }
 
+    .menu-image {
+      padding: 0.5rem 1rem 0.75rem;
+      text-align: center;
+    }
+
+    .menu-image img {
+      max-width: 100%;
+      border-radius: 0.5rem;
+    }
+
     @media (min-width: 480px) {
       body { padding: 1.5rem; }
       header h1 { font-size: 1.75rem; }
@@ -270,14 +280,18 @@
       if (!data) return;
 
       const html = data.restaurants.map(r => {
+        const isImage = r.menu_type === 'image';
         const isWeekly = r.menu_type === 'weekly';
-        const items = isWeekly ? r.items : r.items.filter(i => i.date === selectedDate);
+        const items = (r.items || []);
+        const filteredItems = isWeekly ? items : items.filter(i => i.date === selectedDate);
 
         let itemsHTML = '';
-        if (items.length === 0) {
+        if (isImage && r.image_url) {
+          itemsHTML = `<div class="menu-image"><img src="${esc(r.image_url)}" alt="Lunchmeny ${esc(r.restaurant)}" loading="lazy"></div>`;
+        } else if (filteredItems.length === 0) {
           itemsHTML = `<div class="empty">Ingen lunch denna dag</div>`;
         } else if (isWeekly) {
-          itemsHTML = `<div class="menu-items">${items.map(i =>
+          itemsHTML = `<div class="menu-items">${filteredItems.map(i =>
             `<div class="menu-item">
               <div class="dish-name">${esc(i.name)}</div>
               ${i.description ? `<div class="dish-desc">${esc(i.description)}</div>` : ''}
@@ -286,7 +300,7 @@
         } else {
           // Daily — group by date for the selected day (usually just one date)
           const grouped = {};
-          items.forEach(i => {
+          filteredItems.forEach(i => {
             if (!grouped[i.date]) grouped[i.date] = [];
             grouped[i.date].push(i);
           });
@@ -301,7 +315,7 @@
           ).join('');
         }
 
-        const tagLabel = isWeekly ? 'Veckans meny' : 'Dagens lunch';
+        const tagLabel = isImage ? 'Bildmeny' : isWeekly ? 'Veckans meny' : 'Dagens lunch';
 
         return `<section class="restaurant">
           <div class="restaurant-header">

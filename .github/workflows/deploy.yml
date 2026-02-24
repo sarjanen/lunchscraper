@@ -32,6 +32,12 @@ jobs:
 
       - uses: oven-sh/setup-bun@v2
 
+      # Install Tesseract OCR + Swedish language data (needed for Don Luigi image menu)
+      - name: Install Tesseract OCR
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y tesseract-ocr tesseract-ocr-swe libtesseract-dev
+
       # Run the Go scraper — writes web/public/data/lunches.json
       - run: go run ./cmd/scraper
 

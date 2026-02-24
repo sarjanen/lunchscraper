@@ -6,7 +6,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "scrape": "go run ./cmd/scraper && echo 'Scraping done — data written to web/public/data/lunches.json'"
+    "scrape": "CGO_CPPFLAGS=\"-I$(brew --prefix leptonica 2>/dev/null)/include -I$(brew --prefix tesseract 2>/dev/null)/include\" CGO_LDFLAGS=\"-L$(brew --prefix leptonica 2>/dev/null)/lib -L$(brew --prefix tesseract 2>/dev/null)/lib\" go run ./cmd/scraper && echo 'Scraping done — data written to web/public/data/lunches.json'"
   },
   "devDependencies": {
     "vite": "^6"

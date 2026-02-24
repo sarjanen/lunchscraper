@@ -24,6 +24,7 @@ func main() {
 		scraper.LaszloEbbepark{},
 		scraper.LaLuna{},
 		scraper.MonteCarlo{},
+		scraper.DonLuigi{},
 	}
 
 	var results []scraper.RestaurantMenu

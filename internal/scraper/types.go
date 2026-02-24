@@ -15,6 +15,7 @@ type RestaurantMenu struct {
 	MenuType   string     `json:"menu_type"`
 	Week       string     `json:"week"`
 	Items      []MenuItem `json:"items"`
+	ImageURL   string     `json:"image_url,omitempty"`
 	Source     string     `json:"source"`
 }
 
