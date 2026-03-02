@@ -1,0 +1,28 @@
+name: "Scrape: La Luna"
+
+on:
+  schedule:
+    - cron: "5 8 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Scrape La Luna
+        run: go run ./cmd/scraper --site la_luna
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: la_luna
+          path: web/public/data/la_luna.json
+          retention-days: 1

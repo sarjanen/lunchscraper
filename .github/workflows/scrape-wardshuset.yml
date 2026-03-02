@@ -1,0 +1,28 @@
+name: "Scrape: Wardshuset"
+
+on:
+  schedule:
+    - cron: "20 8 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Scrape Wardshuset
+        run: go run ./cmd/scraper --site wardshuset
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wardshuset
+          path: web/public/data/wardshuset.json
+          retention-days: 1

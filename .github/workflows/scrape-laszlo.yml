@@ -1,0 +1,28 @@
+name: "Scrape: Laszlo Ebbepark"
+
+on:
+  schedule:
+    - cron: "10 8 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Scrape Laszlo Ebbepark
+        run: go run ./cmd/scraper --site laszlo_ebbepark
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: laszlo_ebbepark
+          path: web/public/data/laszlo_ebbepark.json
+          retention-days: 1

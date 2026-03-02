@@ -2,6 +2,7 @@ package scraper
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -66,6 +67,77 @@ func WriteJSON(output Output, path string) {
 	if err := encoder.Encode(output); err != nil {
 		log.Fatal(err)
 	}
+}
+
+// WriteSingleJSON writes a single RestaurantMenu as pretty JSON to the given path.
+func WriteSingleJSON(menu RestaurantMenu, path string) {
+	dir := filepath.Dir(path)
+	_ = os.MkdirAll(dir, os.ModePerm)
+
+	file, err := os.Create(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	encoder := json.NewEncoder(file)
+	encoder.SetIndent("", "  ")
+
+	if err := encoder.Encode(menu); err != nil {
+		log.Fatal(err)
+	}
+}
+
+// MergeJSON reads all *.json files in dir (excluding lunches.json), unmarshals
+// each as a RestaurantMenu, wraps them in an Output, and writes to outputPath.
+func MergeJSON(dir string, outputPath string) error {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return fmt.Errorf("reading directory %s: %w", dir, err)
+	}
+
+	var restaurants []RestaurantMenu
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+		name := entry.Name()
+		if !strings.HasSuffix(name, ".json") || name == "lunches.json" {
+			continue
+		}
+
+		data, err := os.ReadFile(filepath.Join(dir, name))
+		if err != nil {
+			log.Printf("WARN: skipping %s: %v", name, err)
+			continue
+		}
+
+		var menu RestaurantMenu
+		if err := json.Unmarshal(data, &menu); err != nil {
+			log.Printf("WARN: skipping %s: %v", name, err)
+			continue
+		}
+
+		if menu.Restaurant == "" {
+			log.Printf("WARN: skipping %s: no restaurant name", name)
+			continue
+		}
+
+		restaurants = append(restaurants, menu)
+		log.Printf("Merged %s (%d items)", menu.Restaurant, len(menu.Items))
+	}
+
+	if len(restaurants) == 0 {
+		return fmt.Errorf("no valid restaurant JSON files found in %s", dir)
+	}
+
+	output := Output{
+		GeneratedAt: time.Now().Format(time.RFC3339),
+		Restaurants: restaurants,
+	}
+
+	WriteJSON(output, outputPath)
+	return nil
 }
 
 // mondayOfWeek returns the Monday of the current ISO week.

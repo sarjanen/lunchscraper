@@ -1,0 +1,28 @@
+name: "Scrape: Monte Carlo"
+
+on:
+  schedule:
+    - cron: "15 8 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Scrape Monte Carlo
+        run: go run ./cmd/scraper --site monte_carlo
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: monte_carlo
+          path: web/public/data/monte_carlo.json
+          retention-days: 1

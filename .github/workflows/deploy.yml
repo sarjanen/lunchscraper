@@ -1,8 +1,8 @@
-name: Scrape & Deploy
+name: Deploy
 
 on:
   schedule:
-    - cron: '0 8 * * 1-5' # Weekdays 08:00 UTC (~09:00 CET)
+    - cron: "30 8 * * 1-5" # Weekdays 08:30 UTC — after all scrapers finish
   workflow_dispatch:
 
 permissions:
@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build-deploy:
+  deploy:
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -32,14 +32,59 @@ jobs:
 
       - uses: oven-sh/setup-bun@v2
 
-      # Install Tesseract OCR + Swedish language data (needed for Don Luigi image menu)
-      - name: Install Tesseract OCR
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y tesseract-ocr tesseract-ocr-swe libtesseract-dev
+      # Download per-site scrape results from their workflow runs.
+      # if_no_artifact_found: warn — a failed/missing scraper won't block deploy.
+      - name: Download Don Luigi
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: scrape-donluigi.yml
+          workflow_conclusion: success
+          name: don_luigi
+          path: web/public/data/
+          if_no_artifact_found: warn
 
-      # Run the Go scraper — writes web/public/data/lunches.json
-      - run: go run ./cmd/scraper
+      - name: Download La Luna
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: scrape-laluna.yml
+          workflow_conclusion: success
+          name: la_luna
+          path: web/public/data/
+          if_no_artifact_found: warn
+
+      - name: Download Laszlo Ebbepark
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: scrape-laszlo.yml
+          workflow_conclusion: success
+          name: laszlo_ebbepark
+          path: web/public/data/
+          if_no_artifact_found: warn
+
+      - name: Download Monte Carlo
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: scrape-montecarlo.yml
+          workflow_conclusion: success
+          name: monte_carlo
+          path: web/public/data/
+          if_no_artifact_found: warn
+
+      - name: Download Wardshuset
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: scrape-wardshuset.yml
+          workflow_conclusion: success
+          name: wardshuset
+          path: web/public/data/
+          if_no_artifact_found: warn
+
+      - name: List downloaded data
+        run: ls -la web/public/data/
+
+      # Merge per-site JSONs into lunches.json
+      - name: Merge restaurant data
+        run: go run ./cmd/scraper --merge
 
       # Build the Vite site
       - run: bun install --frozen-lockfile
