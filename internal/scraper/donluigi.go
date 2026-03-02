@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -77,8 +76,6 @@ func (d DonLuigi) Scrape(ctx context.Context) (RestaurantMenu, error) {
 	if err != nil {
 		return RestaurantMenu{}, fmt.Errorf("donluigi: OCR: %w", err)
 	}
-
-	log.Printf("donluigi OCR text (%d chars):\n%s", len(ocrText), ocrText)
 
 	items := parseDonLuigiMenu(ocrText)
 

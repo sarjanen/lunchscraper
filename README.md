@@ -16,19 +16,42 @@ internal/scraper/     Scraper logic & restaurant parsers
 web/                  Frontend (index.html)
 ```
 
+## Prerequisites
+
+- [Go](https://go.dev/) 1.25+
+- [Bun](https://bun.sh/) (or Node.js)
+- Chrome or Chromium (used headlessly by chromedp)
+- **Tesseract OCR** — required by `gosseract` for image-based menu parsing:
+
+```sh
+brew install tesseract
+```
+
 ## Getting started
 
 ```sh
-# Run the scraper (requires Chrome/Chromium)
-go run ./cmd/scraper
+# Install frontend dependencies
+bun install
+
+# Run the scraper (sets the required CGO flags for Tesseract/Leptonica automatically)
+bun run scrape
 
 # Dev server
-bun install
 bun run dev
 
 # Production build
 bun run build
 ```
+
+> **Running the scraper without Bun:**
+> If you want to call `go run` directly you need to export the CGO flags so the
+> linker can find Tesseract and Leptonica:
+>
+> ```sh
+> export CGO_CPPFLAGS="-I$(brew --prefix leptonica)/include -I$(brew --prefix tesseract)/include"
+> export CGO_LDFLAGS="-L$(brew --prefix leptonica)/lib -L$(brew --prefix tesseract)/lib"
+> go run ./cmd/scraper
+> ```
 
 ## Adding a restaurant
 
