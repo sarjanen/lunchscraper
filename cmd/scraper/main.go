@@ -2,7 +2,10 @@ package main
 
 import (
 	"context"
+	"flag"
+	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/chromedp/chromedp"
@@ -11,6 +14,50 @@ import (
 )
 
 func main() {
+	site := flag.String("site", "", "Scrape a single site by name (e.g. don_luigi, la_luna, laszlo_ebbepark, monte_carlo, wardshuset)")
+	merge := flag.Bool("merge", false, "Skip scraping; merge individual JSON files from web/public/data/ into lunches.json")
+	configPath := flag.String("config", "restaurants.json", "Path to the restaurants.json config file (used by --merge for coordinate enrichment)")
+	flag.Parse()
+
+	// --merge mode: combine per-site JSON files into lunches.json
+	if *merge {
+		dataDir := "web/public/data"
+		outputPath := "web/public/data/lunches.json"
+		if err := scraper.MergeJSON(dataDir, outputPath, *configPath); err != nil {
+			log.Fatalf("Merge failed: %v", err)
+		}
+		log.Printf("Merged individual JSONs into %s", outputPath)
+		return
+	}
+
+	allScrapers := []scraper.Scraper{
+		scraper.LaszloEbbepark{},
+		scraper.LaLuna{},
+		scraper.MonteCarlo{},
+		scraper.DonLuigi{},
+		scraper.Wardshuset{},
+	}
+
+	// Build the list of scrapers to run.
+	var targets []scraper.Scraper
+	if *site != "" {
+		for _, s := range allScrapers {
+			if s.Name() == *site {
+				targets = append(targets, s)
+				break
+			}
+		}
+		if len(targets) == 0 {
+			fmt.Fprintf(os.Stderr, "Unknown site %q. Available sites:\n", *site)
+			for _, s := range allScrapers {
+				fmt.Fprintf(os.Stderr, "  %s\n", s.Name())
+			}
+			os.Exit(1)
+		}
+	} else {
+		targets = allScrapers
+	}
+
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.Flag("headless", true),
 		chromedp.Flag("disable-gpu", true),
@@ -20,18 +67,10 @@ func main() {
 	allocCtx, cancel := chromedp.NewExecAllocator(context.Background(), opts...)
 	defer cancel()
 
-	scrapers := []scraper.Scraper{
-		scraper.LaszloEbbepark{},
-		scraper.LaLuna{},
-		scraper.MonteCarlo{},
-		scraper.DonLuigi{},
-		scraper.Wardshuset{},
-	}
-
 	var results []scraper.RestaurantMenu
 
 	var failed int
-	for _, s := range scrapers {
+	for _, s := range targets {
 		var menu scraper.RestaurantMenu
 		var err error
 
@@ -63,6 +102,17 @@ func main() {
 		results = append(results, menu)
 	}
 
+	// --site mode: write individual JSON per restaurant
+	if *site != "" {
+		for _, menu := range results {
+			path := fmt.Sprintf("web/public/data/%s.json", *site)
+			scraper.WriteSingleJSON(menu, path)
+			log.Printf("Wrote %s", path)
+		}
+		return
+	}
+
+	// Default: write combined lunches.json
 	output := scraper.Output{
 		GeneratedAt: time.Now().Format(time.RFC3339),
 		Restaurants: results,

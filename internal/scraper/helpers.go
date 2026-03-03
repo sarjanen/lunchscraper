@@ -2,6 +2,7 @@ package scraper
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -66,6 +67,115 @@ func WriteJSON(output Output, path string) {
 	if err := encoder.Encode(output); err != nil {
 		log.Fatal(err)
 	}
+}
+
+// WriteSingleJSON writes a single RestaurantMenu as pretty JSON to the given path.
+func WriteSingleJSON(menu RestaurantMenu, path string) {
+	dir := filepath.Dir(path)
+	_ = os.MkdirAll(dir, os.ModePerm)
+
+	file, err := os.Create(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	encoder := json.NewEncoder(file)
+	encoder.SetIndent("", "  ")
+
+	if err := encoder.Encode(menu); err != nil {
+		log.Fatal(err)
+	}
+}
+
+// loadRestaurantConfigs reads the restaurants.json config file and returns a
+// map from key (e.g. "don_luigi") to RestaurantConfig.
+func loadRestaurantConfigs(configPath string) (map[string]RestaurantConfig, error) {
+	data, err := os.ReadFile(configPath)
+	if err != nil {
+		return nil, fmt.Errorf("reading config %s: %w", configPath, err)
+	}
+	var configs []RestaurantConfig
+	if err := json.Unmarshal(data, &configs); err != nil {
+		return nil, fmt.Errorf("parsing config %s: %w", configPath, err)
+	}
+	m := make(map[string]RestaurantConfig, len(configs))
+	for _, c := range configs {
+		m[c.Key] = c
+	}
+	return m, nil
+}
+
+// MergeJSON reads all *.json files in dir (excluding lunches.json), unmarshals
+// each as a RestaurantMenu, wraps them in an Output, and writes to outputPath.
+// If configPath is non-empty, each restaurant is enriched with lat/lng from the
+// config file (matched by filename key).
+func MergeJSON(dir string, outputPath string, configPath string) error {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return fmt.Errorf("reading directory %s: %w", dir, err)
+	}
+
+	// Optionally load restaurant configs for coordinate enrichment.
+	var configs map[string]RestaurantConfig
+	if configPath != "" {
+		configs, err = loadRestaurantConfigs(configPath)
+		if err != nil {
+			log.Printf("WARN: could not load config %s: %v (skipping coordinate enrichment)", configPath, err)
+		}
+	}
+
+	var restaurants []RestaurantMenu
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+		name := entry.Name()
+		if !strings.HasSuffix(name, ".json") || name == "lunches.json" {
+			continue
+		}
+
+		data, err := os.ReadFile(filepath.Join(dir, name))
+		if err != nil {
+			log.Printf("WARN: skipping %s: %v", name, err)
+			continue
+		}
+
+		var menu RestaurantMenu
+		if err := json.Unmarshal(data, &menu); err != nil {
+			log.Printf("WARN: skipping %s: %v", name, err)
+			continue
+		}
+
+		if menu.Restaurant == "" {
+			log.Printf("WARN: skipping %s: no restaurant name", name)
+			continue
+		}
+
+		// Enrich with coordinates from config if available.
+		if configs != nil {
+			key := strings.TrimSuffix(name, ".json")
+			if cfg, ok := configs[key]; ok {
+				menu.Latitude = cfg.Latitude
+				menu.Longitude = cfg.Longitude
+			}
+		}
+
+		restaurants = append(restaurants, menu)
+		log.Printf("Merged %s (%d items)", menu.Restaurant, len(menu.Items))
+	}
+
+	if len(restaurants) == 0 {
+		return fmt.Errorf("no valid restaurant JSON files found in %s", dir)
+	}
+
+	output := Output{
+		GeneratedAt: time.Now().Format(time.RFC3339),
+		Restaurants: restaurants,
+	}
+
+	WriteJSON(output, outputPath)
+	return nil
 }
 
 // mondayOfWeek returns the Monday of the current ISO week.
