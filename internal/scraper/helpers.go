@@ -88,12 +88,41 @@ func WriteSingleJSON(menu RestaurantMenu, path string) {
 	}
 }
 
+// loadRestaurantConfigs reads the restaurants.json config file and returns a
+// map from key (e.g. "don_luigi") to RestaurantConfig.
+func loadRestaurantConfigs(configPath string) (map[string]RestaurantConfig, error) {
+	data, err := os.ReadFile(configPath)
+	if err != nil {
+		return nil, fmt.Errorf("reading config %s: %w", configPath, err)
+	}
+	var configs []RestaurantConfig
+	if err := json.Unmarshal(data, &configs); err != nil {
+		return nil, fmt.Errorf("parsing config %s: %w", configPath, err)
+	}
+	m := make(map[string]RestaurantConfig, len(configs))
+	for _, c := range configs {
+		m[c.Key] = c
+	}
+	return m, nil
+}
+
 // MergeJSON reads all *.json files in dir (excluding lunches.json), unmarshals
 // each as a RestaurantMenu, wraps them in an Output, and writes to outputPath.
-func MergeJSON(dir string, outputPath string) error {
+// If configPath is non-empty, each restaurant is enriched with lat/lng from the
+// config file (matched by filename key).
+func MergeJSON(dir string, outputPath string, configPath string) error {
 	entries, err := os.ReadDir(dir)
 	if err != nil {
 		return fmt.Errorf("reading directory %s: %w", dir, err)
+	}
+
+	// Optionally load restaurant configs for coordinate enrichment.
+	var configs map[string]RestaurantConfig
+	if configPath != "" {
+		configs, err = loadRestaurantConfigs(configPath)
+		if err != nil {
+			log.Printf("WARN: could not load config %s: %v (skipping coordinate enrichment)", configPath, err)
+		}
 	}
 
 	var restaurants []RestaurantMenu
@@ -121,6 +150,15 @@ func MergeJSON(dir string, outputPath string) error {
 		if menu.Restaurant == "" {
 			log.Printf("WARN: skipping %s: no restaurant name", name)
 			continue
+		}
+
+		// Enrich with coordinates from config if available.
+		if configs != nil {
+			key := strings.TrimSuffix(name, ".json")
+			if cfg, ok := configs[key]; ok {
+				menu.Latitude = cfg.Latitude
+				menu.Longitude = cfg.Longitude
+			}
 		}
 
 		restaurants = append(restaurants, menu)

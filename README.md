@@ -57,3 +57,38 @@ bun run build
 
 1. Create `internal/scraper/<name>.go` implementing the `Scraper` interface
 2. Register it in `cmd/scraper/main.go`
+3. Add an entry to `restaurants.json`:
+
+```json
+{
+  "key": "<scraper_name>",
+  "name": "Human-Readable Name",
+  "location": "Area / Street",
+  "latitude": 0.0,
+  "longitude": 0.0,
+  "apt_packages": []
+}
+```
+
+That's it — the CI workflow automatically picks up new entries from
+`restaurants.json` and runs them as parallel matrix jobs. No workflow
+YAML edits needed.
+
+### `restaurants.json` schema
+
+| Field          | Type       | Description                                                     |
+|----------------|------------|-----------------------------------------------------------------|
+| `key`          | `string`   | Must match the value returned by `Scraper.Name()` / `--site`    |
+| `name`        | `string`   | Display name for the restaurant                                 |
+| `location`    | `string`   | Area or street name                                             |
+| `latitude`    | `number`   | GPS latitude (used for future geolocation features)             |
+| `longitude`   | `number`   | GPS longitude                                                   |
+| `apt_packages`| `string[]` | Extra apt packages to install in CI (e.g. `tesseract-ocr`)      |
+
+### CI architecture
+
+A single workflow (`.github/workflows/scrape-and-deploy.yml`) with three jobs:
+
+1. **prepare** — reads `restaurants.json` and outputs a dynamic matrix
+2. **scrape** — parallel matrix jobs (one per restaurant, `fail-fast: false`)
+3. **deploy** — merges all per-site JSONs, builds the Vite site, deploys to GitHub Pages

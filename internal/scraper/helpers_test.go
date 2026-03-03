@@ -103,7 +103,7 @@ func TestMergeJSON_CombinesFiles(t *testing.T) {
 	}
 
 	outputPath := filepath.Join(dir, "lunches.json")
-	if err := MergeJSON(dir, outputPath); err != nil {
+	if err := MergeJSON(dir, outputPath, ""); err != nil {
 		t.Fatalf("MergeJSON failed: %v", err)
 	}
 
@@ -143,7 +143,7 @@ func TestMergeJSON_SkipsLunchesJSON(t *testing.T) {
 	os.WriteFile(filepath.Join(dir, "lunches.json"), oldOutput, 0644)
 
 	outputPath := filepath.Join(dir, "lunches.json")
-	if err := MergeJSON(dir, outputPath); err != nil {
+	if err := MergeJSON(dir, outputPath, ""); err != nil {
 		t.Fatalf("MergeJSON failed: %v", err)
 	}
 
@@ -168,7 +168,7 @@ func TestMergeJSON_SkipsInvalidJSON(t *testing.T) {
 	os.WriteFile(filepath.Join(dir, "bad.json"), []byte("{invalid json"), 0644)
 
 	outputPath := filepath.Join(dir, "lunches.json")
-	if err := MergeJSON(dir, outputPath); err != nil {
+	if err := MergeJSON(dir, outputPath, ""); err != nil {
 		t.Fatalf("MergeJSON should succeed despite invalid file: %v", err)
 	}
 
@@ -191,7 +191,7 @@ func TestMergeJSON_SkipsEmptyRestaurantName(t *testing.T) {
 	os.WriteFile(filepath.Join(dir, "named.json"), data2, 0644)
 
 	outputPath := filepath.Join(dir, "lunches.json")
-	if err := MergeJSON(dir, outputPath); err != nil {
+	if err := MergeJSON(dir, outputPath, ""); err != nil {
 		t.Fatal(err)
 	}
 
@@ -208,14 +208,47 @@ func TestMergeJSON_ErrorsOnEmptyDir(t *testing.T) {
 	dir := t.TempDir()
 	outputPath := filepath.Join(dir, "lunches.json")
 
-	if err := MergeJSON(dir, outputPath); err == nil {
+	if err := MergeJSON(dir, outputPath, ""); err == nil {
 		t.Error("expected error for empty directory, got nil")
 	}
 }
 
 func TestMergeJSON_ErrorsOnMissingDir(t *testing.T) {
-	if err := MergeJSON("/nonexistent/path", "/tmp/out.json"); err == nil {
+	if err := MergeJSON("/nonexistent/path", "/tmp/out.json", ""); err == nil {
 		t.Error("expected error for missing directory, got nil")
+	}
+}
+
+func TestMergeJSON_EnrichesWithConfigCoordinates(t *testing.T) {
+	dir := t.TempDir()
+
+	// Write a per-site JSON (filename key = "my_place").
+	data, _ := json.Marshal(RestaurantMenu{Restaurant: "My Place", Location: "Here", Items: []MenuItem{{Name: "Dish"}}})
+	os.WriteFile(filepath.Join(dir, "my_place.json"), data, 0644)
+
+	// Write a restaurants.json config with coordinates for "my_place".
+	configPath := filepath.Join(dir, "restaurants.json")
+	config := `[{"key":"my_place","name":"My Place","location":"Here","latitude":58.41,"longitude":15.62,"apt_packages":[]}]`
+	os.WriteFile(configPath, []byte(config), 0644)
+
+	outputPath := filepath.Join(dir, "lunches.json")
+	if err := MergeJSON(dir, outputPath, configPath); err != nil {
+		t.Fatalf("MergeJSON failed: %v", err)
+	}
+
+	outData, _ := os.ReadFile(outputPath)
+	var output Output
+	json.Unmarshal(outData, &output)
+
+	if len(output.Restaurants) != 1 {
+		t.Fatalf("got %d restaurants, want 1", len(output.Restaurants))
+	}
+	r := output.Restaurants[0]
+	if r.Latitude != 58.41 {
+		t.Errorf("got latitude %f, want 58.41", r.Latitude)
+	}
+	if r.Longitude != 15.62 {
+		t.Errorf("got longitude %f, want 15.62", r.Longitude)
 	}
 }
 
@@ -228,7 +261,7 @@ func TestMergeJSON_IgnoresNonJSONFiles(t *testing.T) {
 	os.WriteFile(filepath.Join(dir, ".gitkeep"), []byte(""), 0644)
 
 	outputPath := filepath.Join(dir, "lunches.json")
-	if err := MergeJSON(dir, outputPath); err != nil {
+	if err := MergeJSON(dir, outputPath, ""); err != nil {
 		t.Fatal(err)
 	}
 

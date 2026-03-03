@@ -16,13 +16,14 @@ import (
 func main() {
 	site := flag.String("site", "", "Scrape a single site by name (e.g. don_luigi, la_luna, laszlo_ebbepark, monte_carlo, wardshuset)")
 	merge := flag.Bool("merge", false, "Skip scraping; merge individual JSON files from web/public/data/ into lunches.json")
+	configPath := flag.String("config", "restaurants.json", "Path to the restaurants.json config file (used by --merge for coordinate enrichment)")
 	flag.Parse()
 
 	// --merge mode: combine per-site JSON files into lunches.json
 	if *merge {
 		dataDir := "web/public/data"
 		outputPath := "web/public/data/lunches.json"
-		if err := scraper.MergeJSON(dataDir, outputPath); err != nil {
+		if err := scraper.MergeJSON(dataDir, outputPath, *configPath); err != nil {
 			log.Fatalf("Merge failed: %v", err)
 		}
 		log.Printf("Merged individual JSONs into %s", outputPath)

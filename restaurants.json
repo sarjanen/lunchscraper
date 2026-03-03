@@ -1,0 +1,42 @@
+[
+  {
+    "key": "don_luigi",
+    "name": "Don Luigi",
+    "location": "Norrköping",
+    "latitude": 0.0,
+    "longitude": 0.0,
+    "apt_packages": ["tesseract-ocr", "tesseract-ocr-swe", "libtesseract-dev"]
+  },
+  {
+    "key": "la_luna",
+    "name": "La Luna",
+    "location": "Drabantgatan",
+    "latitude": 0.0,
+    "longitude": 0.0,
+    "apt_packages": []
+  },
+  {
+    "key": "laszlo_ebbepark",
+    "name": "Laszlo's Krog",
+    "location": "Ebbepark",
+    "latitude": 0.0,
+    "longitude": 0.0,
+    "apt_packages": []
+  },
+  {
+    "key": "monte_carlo",
+    "name": "Pizzeria Monte Carlo",
+    "location": "Parkgatan",
+    "latitude": 0.0,
+    "longitude": 0.0,
+    "apt_packages": []
+  },
+  {
+    "key": "wardshuset",
+    "name": "Wärdshuset, Gamla Linköping",
+    "location": "Gamla Linköping",
+    "latitude": 0.0,
+    "longitude": 0.0,
+    "apt_packages": []
+  }
+]
