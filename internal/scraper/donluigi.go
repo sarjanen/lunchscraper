@@ -1,3 +1,5 @@
+//go:build ocr
+
 package scraper
 
 import (

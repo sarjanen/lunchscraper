@@ -30,13 +30,8 @@ func main() {
 		return
 	}
 
-	allScrapers := []scraper.Scraper{
-		scraper.LaszloEbbepark{},
-		scraper.LaLuna{},
-		scraper.MonteCarlo{},
-		scraper.DonLuigi{},
-		scraper.Wardshuset{},
-	}
+	allScrapers := baseScrapers()
+	allScrapers = append(allScrapers, extraScrapers()...)
 
 	// Build the list of scrapers to run.
 	var targets []scraper.Scraper

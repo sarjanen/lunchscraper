@@ -70,7 +70,13 @@ jobs:
           sudo apt-get install -y ${{ join(matrix.restaurant.apt_packages, ' ') }}
 
       - name: Scrape ${{ matrix.restaurant.name }}
-        run: go run ./cmd/scraper --site ${{ matrix.restaurant.key }}
+        run: |
+          tags="${{ matrix.restaurant.build_tags }}"
+          if [ -n "$tags" ]; then
+            go run -tags "$tags" ./cmd/scraper --site ${{ matrix.restaurant.key }}
+          else
+            go run ./cmd/scraper --site ${{ matrix.restaurant.key }}
+          fi
 
       - uses: actions/upload-artifact@v4
         with:

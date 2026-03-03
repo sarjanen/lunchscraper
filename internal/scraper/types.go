@@ -29,6 +29,7 @@ type RestaurantConfig struct {
 	Latitude    float64  `json:"latitude"`
 	Longitude   float64  `json:"longitude"`
 	AptPackages []string `json:"apt_packages"`
+	BuildTags   string   `json:"build_tags"`
 }
 
 // MenuItem is a single dish on a menu.

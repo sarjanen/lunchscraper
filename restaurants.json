@@ -5,7 +5,8 @@
     "location": "Norrköping",
     "latitude": 0.0,
     "longitude": 0.0,
-    "apt_packages": ["tesseract-ocr", "tesseract-ocr-swe", "libtesseract-dev"]
+    "apt_packages": ["tesseract-ocr", "tesseract-ocr-swe", "libtesseract-dev"],
+    "build_tags": "ocr"
   },
   {
     "key": "la_luna",
@@ -13,7 +14,8 @@
     "location": "Drabantgatan",
     "latitude": 0.0,
     "longitude": 0.0,
-    "apt_packages": []
+    "apt_packages": [],
+    "build_tags": ""
   },
   {
     "key": "laszlo_ebbepark",
@@ -21,7 +23,8 @@
     "location": "Ebbepark",
     "latitude": 0.0,
     "longitude": 0.0,
-    "apt_packages": []
+    "apt_packages": [],
+    "build_tags": ""
   },
   {
     "key": "monte_carlo",
@@ -29,7 +32,8 @@
     "location": "Parkgatan",
     "latitude": 0.0,
     "longitude": 0.0,
-    "apt_packages": []
+    "apt_packages": [],
+    "build_tags": ""
   },
   {
     "key": "wardshuset",
@@ -37,6 +41,7 @@
     "location": "Gamla Linköping",
     "latitude": 0.0,
     "longitude": 0.0,
-    "apt_packages": []
+    "apt_packages": [],
+    "build_tags": ""
   }
 ]
