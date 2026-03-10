@@ -22,7 +22,16 @@ func (l LaszloEbbepark) Scrape(ctx context.Context) (RestaurantMenu, error) {
 
 	err := chromedp.Run(ctx,
 		chromedp.Navigate(url),
-		chromedp.WaitReady("body", chromedp.ByQuery),
+
+		// Wait for body to be ready (up to 15s, non-fatal)
+		chromedp.ActionFunc(func(ctx context.Context) error {
+			waitCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
+			defer cancel()
+			_ = chromedp.WaitReady("body", chromedp.ByQuery).Do(waitCtx)
+			return nil // non-fatal, keep going
+		}),
+
+		chromedp.Sleep(1*time.Second), // Give page time to start rendering
 
 		// Wait for the Elementor tab widget to render before interacting
 		chromedp.ActionFunc(func(ctx context.Context) error {
