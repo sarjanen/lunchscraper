@@ -2,7 +2,10 @@ package scraper
 
 import (
 	"context"
-	"strings"
+	"encoding/json"
+	"log"
+	"regexp"
+	"strconv"
 	"time"
 
 	"github.com/chromedp/chromedp"
@@ -15,10 +18,23 @@ func (l LaszloEbbepark) Name() string {
 	return "laszlo_ebbepark"
 }
 
+// laszloSection represents one week-section extracted from the DOM.
+type laszloSection struct {
+	WeekClass string       `json:"weekClass"`
+	DateRange string       `json:"dateRange"`
+	Items     []laszloItem `json:"items"`
+}
+
+// laszloItem represents a single dish extracted from the DOM.
+type laszloItem struct {
+	Title   string `json:"title"`
+	Content string `json:"content"`
+}
+
 func (l LaszloEbbepark) Scrape(ctx context.Context) (RestaurantMenu, error) {
 	url := "https://www.laszloskrog.se/ebbepark/"
 
-	var rawText string
+	var sectionsJSON string
 
 	err := chromedp.Run(ctx,
 		chromedp.Navigate(url),
@@ -28,18 +44,17 @@ func (l LaszloEbbepark) Scrape(ctx context.Context) (RestaurantMenu, error) {
 			waitCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
 			defer cancel()
 			_ = chromedp.WaitReady("body", chromedp.ByQuery).Do(waitCtx)
-			return nil // non-fatal, keep going
+			return nil
 		}),
 
-		chromedp.Sleep(1*time.Second), // Give page time to start rendering
+		chromedp.Sleep(1*time.Second),
 
-		// Wait for the Elementor tab widget to render before interacting
+		// Wait for the Elementor tab widget to render
 		chromedp.ActionFunc(func(ctx context.Context) error {
-			// Try up to 10s for a tab element to appear
 			waitCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 			defer cancel()
 			_ = chromedp.WaitVisible(`.elementor-tab-title, [role="tab"], .e-n-tab-title`, chromedp.ByQuery).Do(waitCtx)
-			return nil // non-fatal, keep going
+			return nil
 		}),
 
 		// Handle cookie consent dialog
@@ -68,7 +83,6 @@ func (l LaszloEbbepark) Scrape(ctx context.Context) (RestaurantMenu, error) {
 			var clicked bool
 			err := chromedp.Evaluate(`
 				(() => {
-					// Find the LUNCH tab title in the elementor tabs widget
 					const tabTitles = Array.from(document.querySelectorAll(
 						'.elementor-tab-title, [role="tab"], .e-n-tab-title'
 					));
@@ -81,7 +95,6 @@ func (l LaszloEbbepark) Scrape(ctx context.Context) (RestaurantMenu, error) {
 						lunchTab.click();
 						return true;
 					}
-					// Fallback: click anchor links
 					const links = Array.from(document.querySelectorAll("a"));
 					const lunchLink = links.find(a => {
 						const text = a.textContent.trim().toUpperCase();
@@ -95,75 +108,52 @@ func (l LaszloEbbepark) Scrape(ctx context.Context) (RestaurantMenu, error) {
 					return false;
 				})()
 			`, &clicked).Do(ctx)
-			if err != nil {
-				return err
-			}
-			return nil
+			return err
 		}),
 
 		chromedp.Sleep(1*time.Second),
 
-		// Wait for tab content with "VECKA" to appear (up to 10s)
+		// Wait for fdm-section elements to appear (up to 10s)
 		chromedp.ActionFunc(func(ctx context.Context) error {
 			waitCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 			defer cancel()
-			for {
-				var found bool
-				_ = chromedp.Evaluate(`
-					(() => {
-						const panels = document.querySelectorAll(
-						  '.elementor-tab-content, .e-n-tabs-content > div, [role="tabpanel"]'
-						);
-						return Array.from(panels).some(p => p.innerText && p.innerText.toUpperCase().includes('VECKA'));
-					})()
-				`, &found).Do(waitCtx)
-				if found {
-					return nil
-				}
-				select {
-				case <-waitCtx.Done():
-					return nil // non-fatal
-				case <-time.After(500 * time.Millisecond):
-				}
-			}
+			_ = chromedp.WaitVisible(`ul.fdm-section`, chromedp.ByQuery).Do(waitCtx)
+			return nil
 		}),
 
-		// Extract the lunch menu content from the active tab
+		// Extract structured menu data — only from lunch sections (those with a vecka class)
 		chromedp.Evaluate(`
 			(() => {
-			  // Strategy 1: Look for active/visible elementor tab content
-			  const tabContents = Array.from(document.querySelectorAll(
-			    '.elementor-tab-content, .e-n-tabs-content > div, [role="tabpanel"]'
-			  ));
-			  for (const tab of tabContents) {
-			    const text = tab.innerText || '';
-			    if (text.toUpperCase().includes('VECKA') && text.length > 100) {
-			      return text;
-			    }
-			  }
-			  
-			  // Strategy 2: Look for any element containing "VECKA"
-			  const allElements = Array.from(document.querySelectorAll('div, section'));
-			  for (const el of allElements) {
-			    const text = el.innerText || '';
-			    if (text.toUpperCase().includes('VECKA') && 
-			        text.includes('Serveras') && 
-			        text.length > 100 && text.length < 5000) {
-			      return text;
-			    }
-			  }
-			  
-			  // Strategy 3: Get all visible text
-			  return document.body.innerText;
+				const sections = document.querySelectorAll('ul.fdm-section[class*="fdm-section-vecka-"]');
+				const result = [];
+				for (const section of sections) {
+					const classList = Array.from(section.classList);
+					const weekClass = classList.find(c => /^fdm-section-vecka-\d+-\d+$/.test(c)) || '';
+					if (!weekClass) continue;
+					const header = section.querySelector('.fdm-section-header h3');
+					const dateRange = header ? header.textContent.trim() : '';
+					const items = [];
+					const itemEls = section.querySelectorAll('.fdm-item');
+					for (const item of itemEls) {
+						const titleEl = item.querySelector('.fdm-item-title');
+						const contentEl = item.querySelector('.fdm-item-content');
+						items.push({
+							title: titleEl ? titleEl.textContent.trim() : '',
+							content: contentEl ? contentEl.textContent.trim() : ''
+						});
+					}
+					result.push({ weekClass, dateRange, items });
+				}
+				return JSON.stringify(result);
 			})()
-		`, &rawText),
+		`, &sectionsJSON),
 	)
 
 	if err != nil {
 		return RestaurantMenu{}, err
 	}
 
-	items := parseLaszloMenu(rawText)
+	items := parseLaszloSections(sectionsJSON)
 
 	return RestaurantMenu{
 		Restaurant: "Laszlo's Krog",
@@ -175,84 +165,51 @@ func (l LaszloEbbepark) Scrape(ctx context.Context) (RestaurantMenu, error) {
 	}, nil
 }
 
-func parseLaszloMenu(raw string) []MenuItem {
-	// Collect only non-empty trimmed lines
-	var cleaned []string
-	for _, line := range strings.Split(raw, "\n") {
-		trimmed := strings.TrimSpace(line)
-		if len(trimmed) > 0 {
-			cleaned = append(cleaned, trimmed)
-		}
+// weekClassRe matches "fdm-section-vecka-13-2026" -> week=13, year=2026
+var weekClassRe = regexp.MustCompile(`^fdm-section-vecka-(\d+)-(\d+)$`)
+
+func parseLaszloSections(sectionsJSON string) []MenuItem {
+	var sections []laszloSection
+	if err := json.Unmarshal([]byte(sectionsJSON), &sections); err != nil {
+		log.Printf("laszlo: failed to parse sections JSON: %v", err)
+		return nil
 	}
+
+	_, currentWeekNum := time.Now().ISOWeek()
 
 	var items []MenuItem
-	var inMenuSection bool
-
-	skipPhrases := []string{
-		"till lunchen ingår",
-		"ursprungsinformation",
-		"har du matallergier",
-		"fråga gärna",
-		"köp lunchkort",
-		"vardagar mellan",
-		"ät i restaurangen",
-		"avhämtning",
-		"pensionärer",
-	}
-
-	for i := 0; i < len(cleaned); i++ {
-		line := cleaned[i]
-		lower := strings.ToLower(line)
-		upper := strings.ToUpper(line)
-
-		// Start capturing after the date line (e.g. "23-27 FEBRUARI")
-		if containsSwedishMonth(upper) {
-			inMenuSection = true
+	for _, sec := range sections {
+		// Match on week number only — the year in the class can be wrong
+		// (e.g. "fdm-section-vecka-12-2023" when it should be 2026).
+		sectionWeekNum := laszloSectionWeekNum(sec.WeekClass)
+		if sectionWeekNum == 0 || sectionWeekNum != currentWeekNum {
 			continue
-		}
-
-		if !inMenuSection {
-			continue
-		}
-
-		// Stop at non-lunch sections
-		if strings.Contains(upper, "AFFÄRSLUNCH") || strings.Contains(upper, "À LA CARTE") || strings.Contains(upper, "Á LA CARTE") || strings.Contains(upper, "CATERING") || strings.Contains(upper, "URSPRUNGSINFORMATION") {
-			break
-		}
-
-		// Skip boilerplate
-		skip := false
-		for _, phrase := range skipPhrases {
-			if strings.Contains(lower, phrase) {
-				skip = true
-				break
-			}
-		}
-		if skip || strings.Contains(upper, "PDF") || strings.Contains(upper, "VECKA") {
-			continue
-		}
-
-		// Dish name + description on next line
-		name := line
-		desc := ""
-		if i+1 < len(cleaned) {
-			next := cleaned[i+1]
-			nextUpper := strings.ToUpper(next)
-			if !strings.Contains(nextUpper, "URSPRUNGSINFORMATION") &&
-				!strings.Contains(nextUpper, "PDF") &&
-				!strings.Contains(nextUpper, "AFFÄRSLUNCH") {
-				desc = next
-				i++
-			}
 		}
 
 		monDate, _ := weekDateRange()
-		items = append(items, MenuItem{
-			Date:        monDate,
-			Name:        name,
-			Description: desc,
-		})
+		for _, dish := range sec.Items {
+			if dish.Title == "" {
+				continue
+			}
+			items = append(items, MenuItem{
+				Date:        monDate,
+				Name:        dish.Title,
+				Description: dish.Content,
+			})
+		}
 	}
 
 	return items
+}
+
+// laszloSectionWeekNum extracts the week number from a class like
+// "fdm-section-vecka-13-2026" -> 13. Returns 0 if not matched.
+// We ignore the year because the site sometimes has incorrect years in the class.
+func laszloSectionWeekNum(class string) int {
+	m := weekClassRe.FindStringSubmatch(class)
+	if m == nil {
+		return 0
+	}
+	week, _ := strconv.Atoi(m[1])
+	return week
 }
