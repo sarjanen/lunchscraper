@@ -29,7 +29,7 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Build matrix from restaurants.json
         id: set-matrix
@@ -57,9 +57,9 @@ jobs:
       matrix:
         restaurant: ${{ fromJSON(needs.prepare.outputs.matrix) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
 
@@ -78,7 +78,7 @@ jobs:
             go run ./cmd/scraper --site ${{ matrix.restaurant.key }}
           fi
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: ${{ matrix.restaurant.key }}
           path: web/public/data/${{ matrix.restaurant.key }}.json
@@ -95,19 +95,19 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/configure-pages@v5
+      - uses: actions/configure-pages@v6
         id: pages
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
 
       - uses: oven-sh/setup-bun@v2
 
       - name: Download all scrape artifacts
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           path: web/public/data/
           merge-multiple: true
@@ -123,9 +123,9 @@ jobs:
         env:
           BASE_PATH: ${{ steps.pages.outputs.base_path }}
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v4
         with:
           path: dist
 
-      - uses: actions/deploy-pages@v4
+      - uses: actions/deploy-pages@v5
         id: deployment
