@@ -246,7 +246,7 @@
 
     function getWeekDates(data) {
       const dates = new Set();
-      data.restaurants.forEach(r => r.items.forEach(i => {
+      data.restaurants.forEach(r => (r.items || []).forEach(i => {
         if (i.date) dates.add(i.date);
       }));
       return [...dates].sort();
